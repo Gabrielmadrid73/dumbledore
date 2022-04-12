@@ -7,7 +7,7 @@ Sometimes in a large environment, we need update the secrets immediately instead
 
 ## Workflow
 
-Image here of workflow
+![Workflow](api-flow.jpg)
 
 ## Docker
 
