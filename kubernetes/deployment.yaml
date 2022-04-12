@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dumbledore
+  labels:
+    app: dumbledore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dumbledore
+  template:
+    metadata:
+      labels:
+        app: dumbledore
+    spec:
+      serviceAccountName: dumbledore
+      containers:
+      - name: dumbledore
+        image: gabrielmadrid/dumbledore:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 250m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+        ports:
+        - containerPort: 80
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health-check
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health-check
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
