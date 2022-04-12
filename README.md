@@ -1,5 +1,5 @@
 # Dumbledore - API Sync Kubernetes Secrets with AWS SSM
-
+![Dumbledore](dumbledore.gif)
 ## About
 
 Dumbledore are inspired by https://github.com/cmattoon/aws-ssm where the secrets are synchronized with AWS SSM Parameter Store in a loop. 
