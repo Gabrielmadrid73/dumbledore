@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dumbledore
+subjects:
+- kind: ServiceAccount
+  name: dumbledore
+  namespace: dumbledore
+roleRef:
+  kind: ClusterRole
+  name: dumbledore
+  apiGroup: rbac.authorization.k8s.io

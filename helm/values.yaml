@@ -1,0 +1,13 @@
+
+
+customNamespace: {}
+
+deployment:
+  port: {}
+
+service:
+  enable: true
+  port: {}
+
+customServiceAccount: {}
+
