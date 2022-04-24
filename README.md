@@ -99,7 +99,7 @@ helm install -f ./helm/values.yaml dumbledore ./helm
 | Path/URI             | Function                |
 | -------------------- |:-----------------------:|
 | /api/v1/secrets/sync | Sync secrets            |
-| /api/v1/health-check | Health Check            |
+| /health-check        | Health Check            |
 
 ## Request
 
