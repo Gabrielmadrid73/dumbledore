@@ -110,6 +110,19 @@ For that, the json data are sent with parameters **namespace** as **String** and
 ````
 curl -X POST -H 'application/json' -H 'Content-Type: application/json' -d '{"namespace": "default", "secrets": ["testando", "teste"]}' http://localhost/api/v1/secrets/sync
 ````
+#### Expected response
+
+````
+{
+  "secrets_updated":[
+    "testando",
+    "teste"
+  ],
+  "secrets_notfound": [],
+  "secrets_error": [],
+  "secrets_parameter_store_notfound": []
+}
+````
 
 ## ☕ GIT Flow
 
