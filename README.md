@@ -90,7 +90,8 @@ kubectl apply -f example.yaml
 ````
 Obs.: Its necessary to configure your ingress to access the API outside the cluster
 
-##### Helm (Need be develop):
+##### Helm v3:
+Create namespace and configure the parameters of ./helm/values.yaml file before run the command below:
 ````
 helm install -f ./helm/values.yaml dumbledore ./helm
 ````
