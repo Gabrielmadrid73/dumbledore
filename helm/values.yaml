@@ -1,13 +1,49 @@
-
-
-customNamespace: {}
+# kubectl create namespace dumbledore
+customNamespace: {} # default: dumbledore
 
 deployment:
-  port: {}
+  image: {} # default: gabrielmadrid/dumbledore
+  version: {} # default: latest
+  
+  replicas: {} # default: 1
+
+  port: {} # default: 80
+  
+  customServiceAccount: {} # default: release name
+  
+  resources:
+    requests:
+      cpu: {} # default: 200m
+      memory: {} # default: 128Mi
+    limits:
+      cpu: {} # default: 350m
+      memory: {} # default: 256Mi
+  
+  command: {}
+  args: {}
+# example
+#  command: uvicorn
+#  args:
+#    - "main:APP"
+#    - "--host 0.0.0.0"
+#    - "--port 80"
+  affinity:
+    enabled: false
+    key: {}
+    operator: {} # default: In
+    value: {}
+
+  tolerations:
+    enabled: false
+    effect: {} # default: NoSchedule
+    key: {}
+    operator: {} # default: Equal
+    value: {}
+
+  envs:
+    awsRegion: "" # OBLIGATORY - has no default value
+    secretApiVersion: {} # default: v1
 
 service:
-  enable: true
-  port: {}
-
-customServiceAccount: {}
-
+  enabled: true # true or false
+  port: {} # default: 80
