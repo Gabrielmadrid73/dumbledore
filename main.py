@@ -18,7 +18,6 @@ AWS_REGION         = os.getenv('AWS_REGION', '')
 
 # GLOBAL VARIABLES
 APP         = FastAPI() # FASTAPI
-NOW         = datetime.now() # TIME TO LOGS
 API         = client.CoreV1Api() # KUBERNETES API
 AWS_SSM     = boto3.client('ssm', region_name=AWS_REGION) # AWS SSM API
 
@@ -34,7 +33,7 @@ def check_secret(namespace="", secrets=[]):
             checked_secrets.append(secret)
         except ApiException:
             secrets_notfound.append(secret)
-            print(NOW, "- [WARNING] - Secret: " + secret + " NOT FOUND!!!")
+            print("[WARNING] - Secret: " + secret + " NOT FOUND!!!")
     
     output = {
         "checked_secrets": checked_secrets,
@@ -101,7 +100,7 @@ def update_secret(namespace="", secrets=[]):
                 secrets_updated.append(secret)
                 
                 # STDOUT OF UPDATES
-                print(NOW, "- [INFO] Secret: " + secret + " - updated with value from Parameter Store: " + ssm_name)
+                print("[INFO] Secret: " + secret + " - updated with value from Parameter Store: " + ssm_name)
                 
             # EXCEPTION TO A ERROR FROM REQUEST TO AWS
             except ApiException as e:
@@ -114,7 +113,7 @@ def update_secret(namespace="", secrets=[]):
             if error.response['Error']['Code'] == 'ParameterNotFound':                
                 # ADD SECRET TO A LIST OF PARAMETER STORE NOT FOUND
                 secrets_parameter_store_notfound.append(secret)
-                print(NOW, "- [WARNING] - Parameter store: " + ssm_name + " NOT FOUND!! Referred of secret: " + secret)
+                print("[WARNING] - Parameter store: " + ssm_name + " NOT FOUND!! Referred of secret: " + secret)
             else:
                 raise error
         
@@ -128,29 +127,17 @@ def update_secret(namespace="", secrets=[]):
 
     return update_secret_return
 
-# VALIDATE SCHEMA OF PAYLOAD
-class schema(BaseModel):
-    namespace: str
-    secrets: list
-
-# FAST API
-@APP.post("/api/v1/secrets/sync")
-async def request(payload: schema):
-    request         = payload.dict()
-    namespace       = request["namespace"]
-    list_of_secrets = request["secrets"]
-    
-    checked         = check_secret(namespace, list_of_secrets)
-    checked_return  = json.loads(checked)
+def backend(namespace="", secrets=[]):
+    check           = check_secret(namespace, secrets)
+    checked_return  = json.loads(check)
     checked_secrets = checked_return["checked_secrets"]
 
-    # REQUEST TO FUNCTION 
-    backend        = update_secret(namespace, checked_secrets)
-    backend_return = json.loads(backend)
+    sync_secrets        = update_secret(namespace, checked_secrets)
+    sync_secrets_return = json.loads(sync_secrets)
 
-    secrets_updated                  = backend_return["secrets_updated"]
-    secrets_error                    = backend_return["secrets_error"]
-    secrets_parameter_store_notfound = backend_return["secrets_parameter_store_notfound"]
+    secrets_updated                  = sync_secrets_return["secrets_updated"]
+    secrets_error                    = sync_secrets_return["secrets_error"]
+    secrets_parameter_store_notfound = sync_secrets_return["secrets_parameter_store_notfound"]
     secrets_notfound                 = checked_return["secrets_notfound"]
     
     api_response = {
@@ -162,7 +149,22 @@ async def request(payload: schema):
     
     return api_response
 
+# VALIDATE SCHEMA OF PAYLOAD
+class schema(BaseModel):
+    namespace: str
+    secrets: list
+
+# FAST API
+@APP.post("/api/v1/secrets/sync")
+async def request(payload: schema):
+    request      = payload.dict()
+    namespace    = request["namespace"]
+    secrets      = request["secrets"]
+    api_response = backend(namespace, secrets)
+
+    return api_response
+
 # HEALTH CHECK
-@APP.get("/api/v1/health-check")
+@APP.get("/health-check")
 async def api_request():
     return "UP"

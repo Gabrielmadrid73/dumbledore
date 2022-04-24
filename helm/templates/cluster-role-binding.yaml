@@ -1,0 +1,14 @@
+{{ if empty .Values.deployment.customServiceAccount }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name | default "dumbledore" }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Release.Name | default "dumbledore" }}
+  namespace: {{ .Values.customNamespace | default "dumbledore" }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Release.Name | default "dumbledore" }}
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

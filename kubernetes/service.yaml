@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: dumbledore
+  namespace: dumbledore
 spec:
   selector:
     app.kubernetes.io/name: dumbledore

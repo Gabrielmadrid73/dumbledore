@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.customNamespace | default "dumbledore" }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.deployment.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.deployment.customServiceAccount | default .Release.Name }}
+      {{ if eq .Values.deployment.affinity.enabled true }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.deployment.affinity.key | quote}}
+                operator: {{ .Values.deployment.affinity.operator | default "In" }}
+                values: 
+                - {{ .Values.deployment.affinity.value | quote}}
+      {{ end }}
+      {{ if eq .Values.deployment.tolerations.enabled true }}
+      tolerations:
+        - effect: {{ .Values.deployment.tolerations.effect | default "NoSchedule" | quote }}
+          key: {{ .Values.deployment.tolerations.key | quote }}
+          operator: {{ .Values.deployment.tolerations.operator | default "Equal" | quote }}
+          value: {{ .Values.deployment.tolerations.value }}
+      {{ end }}
+      containers:
+      - name: {{ .Release.Name }}
+        image: "{{ .Values.deployment.image | default "gabrielmadrid/dumbledore" }}:{{ .Values.deployment.version | default "latest" }}"
+        imagePullPolicy: Always
+        env:
+          - name: AWS_REGION
+            value: {{ .Values.deployment.envs.awsRegion | quote }}
+          - name: SECRET_API_VERSION
+            value: {{ .Values.deployment.envs.secretApiVersion | default "v1" | quote }}
+        resources:
+          requests:
+            cpu: {{ .Values.deployment.resources.requests.cpu | default "200m" | quote }}
+            memory: {{ .Values.deployment.resources.requests.memory | default "128Mi" | quote }}
+          limits:
+            cpu: {{ .Values.deployment.resources.limits.cpu | default "350m" | quote }}
+            memory: {{ .Values.deployment.resources.limits.memory | default "256Mi" | quote }}
+        ports:
+        - containerPort: {{ .Values.deployment.port | default 80 }}
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health-check
+            port: {{ .Values.deployment.port | default 80 }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health-check
+            port: {{ .Values.deployment.port | default 80 }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        {{ if .Values.deployment.command }}
+        command:
+          - {{ .Values.deployment.command }}
+        {{ end }}
+        {{ if .Values.deployment.args }}
+        args:
+          {{ range $argument := .Values.deployment.args }}
+          - {{ $argument | quote }}
+          {{ end }}
+        {{ end }}
