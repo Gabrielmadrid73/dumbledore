@@ -1,11 +1,11 @@
-FROM python:3.10
+FROM python:alpine3.15
 
 WORKDIR /app
 
 COPY requirements.txt .
 COPY main.py .
 
-RUN apt-get update -y
+RUN apk update
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 RUN rm -rf /app/requirements.txt
