@@ -9,6 +9,12 @@ Sometimes in a large environment, we need update the secrets immediately instead
 
 ![Workflow](img/api-flow.jpg)
 
+## Releases
+| Version | Reason        |
+| ------- |:-------------:|
+| v1.0.1  | security fix  |
+| v1.0.0  | initial       |
+
 ## 💻 Requirements
 
 | Environment Variables(required) | Default Value |
@@ -85,7 +91,6 @@ uvicorn main:APP --host 0.0.0.0 --port 80
 
 Execute the command below for each file inside folder kubernetes:
 ````
-cd kubernetes
 kubectl apply -f example.yaml
 ````
 Obs.: Its necessary to configure your ingress to access the API outside the cluster
