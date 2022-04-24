@@ -12,7 +12,6 @@ Sometimes in a large environment, we need update the secrets immediately instead
 ## Releases
 | Version | Reason        |
 | ------- |:-------------:|
-| v1.0.1  | security fix  |
 | v1.0.0  | initial       |
 
 ## 💻 Requirements
