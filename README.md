@@ -30,6 +30,7 @@ metadata:
 type: Opaque
 data{}
 ````
+A example can be found on example/secret.yaml
 
 #### AWS permissions:
 ````
@@ -89,7 +90,7 @@ kubectl apply -f example.yaml
 ````
 Obs.: Its necessary to configure your ingress to access the API outside the cluster
 
-##### Helm:
+##### Helm (Need be develop):
 ````
 helm install -f ./helm/values.yaml dumbledore ./helm
 ````
