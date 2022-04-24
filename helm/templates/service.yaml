@@ -1,0 +1,15 @@
+{{ if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name | default "dumbledore" }}
+  namespace: {{ .Values.customNamespace | default "dumbledore" }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name | default "dumbledore" }}
+  ports:
+  - name: {{ .Release.Name | default "dumbledore" }}
+    protocol: TCP
+    port: {{ .Values.service.port | default 80 }}
+    targetPort: http
+{{ end }}

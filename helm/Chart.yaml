@@ -1,0 +1,15 @@
+apiVersion: v1
+description: API to synchronize Kubernetes secrets with AWS SSM Parameter Store
+name: dumbledore
+version: 0.0.1
+appVersion: 1.0.0
+keywords:
+  - dumbledore
+  - secret
+  - aws
+sources:
+  - https://github.com/Gabrielmadrid73/dumbledore
+maintainers:
+  - name: Gabriel Madrid
+    email: gabrielmadrid73@gmail.com
+    url: https://github.com/Gabrielmadrid73

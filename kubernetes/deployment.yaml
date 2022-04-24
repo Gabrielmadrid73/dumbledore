@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dumbledore
+  namespace: dumbledore
   labels:
     app: dumbledore
 spec:
@@ -19,6 +20,11 @@ spec:
       - name: dumbledore
         image: gabrielmadrid/dumbledore:latest
         imagePullPolicy: Always
+        env:
+          - name: AWS_REGION
+            value: "sa-east-1"
+          - name: SECRET_API_VERSION
+            value: "v1"
         resources:
           requests:
             memory: 256Mi

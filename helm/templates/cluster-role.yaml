@@ -1,0 +1,10 @@
+{{ if empty .Values.deployment.customServiceAccount }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name | default "dumbledore" }}
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "patch"]
+{{ end }}
