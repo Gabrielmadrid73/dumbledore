@@ -8,11 +8,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-func GetParameter(c context.Context, parameter string) error {
+func GetParameter(parameter string) *string {
+
 	value, err := AwsSsmClient.GetParameter(context.TODO(), &ssm.GetParameterInput{Name: aws.String(parameter), WithDecryption: aws.Bool(true)})
+
 	if err != nil {
-		return err
+		log.Printf("failed to get parameter. %s", err)
+		return nil
 	}
-	log.Println(*value.Parameter.Value)
-	return nil
+
+	return value.Parameter.Value
 }

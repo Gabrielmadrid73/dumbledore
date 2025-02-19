@@ -4,10 +4,6 @@ type TypeSecrets struct {
 	Secrets []string `form:"secrets" json:"secrets" binding:"required"`
 }
 
-type TypeSecret struct {
-	Secret string
-}
-
 type TypeNamespace struct {
 	Namespace string `form:"namespace" json:"namespace" binding:"required"`
 }
@@ -17,7 +13,7 @@ type StructSecrets struct {
 	*TypeSecrets
 }
 
-type StructSecret struct {
-	*TypeNamespace
-	*TypeSecret
+type SecretAnnotations struct {
+	ParamName string
+	ParamType string
 }

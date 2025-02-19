@@ -1,38 +1,70 @@
 package k8s
 
 import (
+	"context"
+	"dumbledore/aws"
 	"dumbledore/types"
 	"log"
+	"strings"
 
-	"github.com/gin-gonic/gin"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	ssmAnnotationParamName = "aws-ssm/aws-param-name"
 	ssmAnnotationParamType = "aws-ssm/aws-param-type"
-	ssmAnnotationParamKey  = "aws-ssm/aws-param-key"
 )
 
-func GetSecret(c *gin.Context, namespace string, name string) error {
-	if secret, err := K8sClient.CoreV1().Secrets(namespace).Get(c, name, metav1.GetOptions{}); err != nil || len(secret.Annotations[ssmAnnotationParamName]) > 0 {
-		log.Printf("Skipped secret not found: %s, namespace: %s", name, namespace)
+func GetSecret(namespace string, name string) *v1.Secret {
+	secret, err := K8sClient.CoreV1().Secrets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
-	} else {
-		log.Printf("Secret: %s doesn't contain the annotation %s", name, ssmAnnotationParamName)
+	if err != nil {
+		log.Println(err)
+		return nil
 	}
-	return nil
+
+	return secret
 }
 
-func SyncSecret(c *gin.Context, obj types.StructSecrets) error {
-	for secret := range obj.Secrets {
-		if err := GetSecret(c, obj.Namespace, obj.Secrets[secret]); err != nil {
-			return c.Error(err)
+func CheckSecretAnnotation(obj *v1.Secret) *types.SecretAnnotations {
+	response := &types.SecretAnnotations{
+		ParamName: "",
+		ParamType: "",
+	}
+	for key, value := range obj.Annotations {
+		if strings.Contains(key, ssmAnnotationParamName) {
+			response.ParamName = value
+		}
+
+		if strings.Contains(key, ssmAnnotationParamType) {
+			response.ParamType = value
 		}
 	}
-	return nil
+	if response.ParamName == "" || response.ParamType == "" {
+		log.Printf("secret: %s missing annotations %s or %s", obj.Name, ssmAnnotationParamName, ssmAnnotationParamType)
+		return nil
+	}
+	return response
 }
 
-// if err := aws.GetParameter(c, secret.Annotations["aws-ssm/aws-param-name"]); err != nil {
-// 	log.Printf("Error to update secret %s, caused by: %s", name, err)
-// }
+func UpdateSecret(secret *v1.Secret, metadata *types.SecretAnnotations) bool {
+	if value := aws.GetParameter(metadata.ParamName); value != nil {
+		body := SecretBody(secret, metadata.ParamType, *value)
+		if _, err := K8sClient.CoreV1().Secrets(secret.Namespace).Update(context.TODO(), body, metav1.UpdateOptions{}); err != nil {
+			log.Println(err)
+			return false
+		} else {
+			log.Printf("synchronized secret: %s with parameter store: %s", secret.Name, metadata.ParamName)
+		}
+	}
+	return true
+}
+
+func SecretBody(secret *v1.Secret, paramType string, data string) *v1.Secret {
+	value := make(map[string]string)
+	value[paramType] = data
+	secret.StringData = value
+
+	return secret
+}

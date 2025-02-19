@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"dumbledore/api"
 	"dumbledore/aws"
+	"dumbledore/controller"
 	"dumbledore/k8s"
 	"net/http"
 
@@ -25,7 +25,7 @@ func SetupRouter() *gin.Engine {
 	// TODO use BASE_PATH environment variable
 	v1 := r.Group("/api/v1")
 	{
-		go v1.POST("/secrets/sync", api.Secret)
+		go v1.POST("/secrets/sync", controller.SecretController)
 	}
 
 	r.GET("/health-check", func(c *gin.Context) {
