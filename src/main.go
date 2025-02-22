@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	r := routes.SetupRouter()
-	r.Run(":8080")
+	gin := routes.SetupRouter()
+	gin.Run(":8080")
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"dumbledore/types"
 	"net/http"
 
 	"dumbledore/k8s"
@@ -10,7 +9,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func SecretList(obj types.StructSecrets) []*v1.Secret {
+type RequestBody struct {
+	Namespace string   `json:"namespace" binding:"required"`
+	Secrets   []string `json:"secrets" binding:"required"`
+}
+
+func SecretList(obj *RequestBody) []*v1.Secret {
 	var secretList []*v1.Secret
 	for item := range obj.Secrets {
 		err := k8s.GetSecret(obj.Namespace, obj.Secrets[item])
@@ -21,28 +25,34 @@ func SecretList(obj types.StructSecrets) []*v1.Secret {
 	return secretList
 }
 
-func SyncSecret(obj types.StructSecrets) error {
-	secrets := SecretList(obj)
-	for item := range secrets {
-		if err := k8s.CheckSecretAnnotation(secrets[item]); err != nil {
-			k8s.UpdateSecret(secrets[item], err)
-
+func SyncSecret(obj *RequestBody) bool {
+	if secrets := SecretList(obj); secrets != nil {
+		for item := range secrets {
+			if err := k8s.CheckSecretAnnotation(secrets[item]); err != nil {
+				k8s.UpdateSecret(secrets[item], err)
+			}
 		}
-
+		return true
+	} else {
+		return false
 	}
-
-	return nil
 }
 
 func SecretController(c *gin.Context) {
-	var json types.StructSecrets
+	var json *RequestBody
 
-	if err := c.Bind(&json); err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"expected fields": "namespace: string, secrets: []string",
+		})
 		return
 	}
 
-	SyncSecret(json)
-
-	c.JSON(http.StatusOK, gin.H{"status": "Secrets synchronized"})
+	if err := SyncSecret(json); !err {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error during sync"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"status": "received"})
+		return
+	}
 }

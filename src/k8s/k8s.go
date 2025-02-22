@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"dumbledore/aws"
-	"dumbledore/types"
 	"log"
 	"strings"
 
@@ -16,6 +15,11 @@ const (
 	ssmAnnotationParamType = "aws-ssm/aws-param-type"
 )
 
+type SecretAnnotations struct {
+	ParamName string
+	ParamType string
+}
+
 func GetSecret(namespace string, name string) *v1.Secret {
 	secret, err := K8sClient.CoreV1().Secrets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
@@ -27,8 +31,8 @@ func GetSecret(namespace string, name string) *v1.Secret {
 	return secret
 }
 
-func CheckSecretAnnotation(obj *v1.Secret) *types.SecretAnnotations {
-	response := &types.SecretAnnotations{
+func CheckSecretAnnotation(obj *v1.Secret) *SecretAnnotations {
+	response := &SecretAnnotations{
 		ParamName: "",
 		ParamType: "",
 	}
@@ -48,9 +52,9 @@ func CheckSecretAnnotation(obj *v1.Secret) *types.SecretAnnotations {
 	return response
 }
 
-func UpdateSecret(secret *v1.Secret, metadata *types.SecretAnnotations) bool {
+func UpdateSecret(secret *v1.Secret, metadata *SecretAnnotations) bool {
 	if value := aws.GetParameter(metadata.ParamName); value != nil {
-		body := SecretBody(secret, metadata.ParamType, *value)
+		body := secretBody(secret, metadata.ParamType, *value)
 		if _, err := K8sClient.CoreV1().Secrets(secret.Namespace).Update(context.TODO(), body, metav1.UpdateOptions{}); err != nil {
 			log.Println(err)
 			return false
@@ -61,7 +65,7 @@ func UpdateSecret(secret *v1.Secret, metadata *types.SecretAnnotations) bool {
 	return true
 }
 
-func SecretBody(secret *v1.Secret, paramType string, data string) *v1.Secret {
+func secretBody(secret *v1.Secret, paramType string, data string) *v1.Secret {
 	value := make(map[string]string)
 	value[paramType] = data
 	secret.StringData = value
