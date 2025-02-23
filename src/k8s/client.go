@@ -27,17 +27,17 @@ func InitK8sClient() error {
 		}
 		client, err := kubernetes.NewForConfig(config)
 		if err != nil {
-			panic(err.Error())
+			log.Panicf("failed to load kubeconfig: %s", err.Error())
 		}
 		K8sClient = client
 	} else {
 		config, err := rest.InClusterConfig()
 		if err != nil {
-			panic(err.Error())
+			log.Panicf("failed to get kubernetes in cluster config: %s", err.Error())
 		}
 		client, err := kubernetes.NewForConfig(config)
 		if err != nil {
-			panic(err.Error())
+			log.Panicf("failed to load kubernetes in cluster config: %s", err.Error())
 		}
 		K8sClient = client
 	}

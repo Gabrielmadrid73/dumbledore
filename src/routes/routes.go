@@ -4,6 +4,7 @@ import (
 	"dumbledore/aws"
 	"dumbledore/controller"
 	"dumbledore/k8s"
+	"dumbledore/settings"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +22,12 @@ func SetupRouter() *gin.Engine {
 		panic(ssmInit.Error())
 	}
 
-	// TODO use BASE_PATH environment variable
-	v1 := routes.Group("/api/v1")
+	v1 := routes.Group(settings.GetEnv().BasePath + "/api/v1")
 	{
 		go v1.POST("/secrets/sync", controller.SecretController)
 	}
-	// TODO use BASE_PATH environment variable
-	routes.GET("/health-check", func(c *gin.Context) {
+
+	routes.GET(settings.GetEnv().BasePath+"/health-check", func(c *gin.Context) {
 		c.String(http.StatusOK, "UP")
 	})
 

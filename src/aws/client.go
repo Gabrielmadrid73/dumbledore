@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"dumbledore/settings"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -12,9 +13,9 @@ import (
 var AwsSsmClient *ssm.Client
 
 func InitAwsClient() aws.Config {
-	client, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-1"))
+	client, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(settings.GetEnv().AwsRegion))
 	if err != nil {
-		log.Fatalf("failed to load configuration, %v", err)
+		log.Fatalf("failed to load aws credentials, %v", err)
 	}
 	return client
 }
