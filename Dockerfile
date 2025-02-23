@@ -1,13 +1,23 @@
-FROM python:alpine3.15
+FROM golang:1-alpine AS build
 
 WORKDIR /app
 
-COPY requirements.txt .
-COPY main.py .
+COPY src .
 
-RUN apk update
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN go build -o /app/dumbledore
 
-RUN rm -rf /app/requirements.txt
+FROM golang:1-alpine
 
-ENTRYPOINT ["uvicorn", "main:APP", "--host", "0.0.0.0", "--port", "80"]
+WORKDIR /app
+
+RUN adduser -D dumbledore
+
+COPY --from=build /app/dumbledore /app/dumbledore
+
+RUN chown dumbledore:dumbledore /app/dumbledore
+
+USER dumbledore
+
+ENV GIN_MODE=release
+
+ENTRYPOINT ["./dumbledore"]
